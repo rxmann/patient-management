@@ -29,10 +29,11 @@ FROM openjdk:24-jdk AS RUNNER
 WORKDIR /app
 
 # Copy the packaged JAR file from the build stage
-COPY --from=BUILDER ./app/target/patient-service-0.0.1-SNAPSHOT.jar ./app.jar
+COPY --from=BUILDER ./app/target/billing-service-0.0.1-SNAPSHOT.jar ./app.jar
 
-# Expose port 4000
-EXPOSE 4000
+# Expose ports 4001 and 9001
+EXPOSE 4001
+EXPOSE 7001
 
 # Run the JAR file
 ENTRYPOINT ["java", "-jar", "app.jar"]
