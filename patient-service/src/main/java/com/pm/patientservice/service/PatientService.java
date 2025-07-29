@@ -4,11 +4,13 @@ import com.pm.patientservice.dto.PatientRequestDTO;
 import com.pm.patientservice.dto.PatientResponseDTO;
 import com.pm.patientservice.exception.EmailAlreadyExistsException;
 import com.pm.patientservice.exception.PatientNotFoundException;
+import com.pm.patientservice.grpc.BillingServiceGrpcClient;
 import com.pm.patientservice.mapper.PatientMapper;
 import com.pm.patientservice.model.Patient;
 import com.pm.patientservice.repository.PatientRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -20,9 +22,12 @@ public class PatientService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final PatientRepository patientRepository;
+    private final BillingServiceGrpcClient billingServiceGrpcClient;
 
-    public PatientService(PatientRepository patientRepository) {
+    @Autowired
+    public PatientService(PatientRepository patientRepository, BillingServiceGrpcClient billingServiceGrpcClient) {
         this.patientRepository = patientRepository;
+        this.billingServiceGrpcClient = billingServiceGrpcClient;
     }
 
     public List<PatientResponseDTO> getPatients () {
@@ -34,7 +39,9 @@ public class PatientService {
         logger.debug(patientRequestDTO.toString());
         this.checkForDuplicateEmail(patientRequestDTO.getEmail());
         Patient patient = patientRepository.save(PatientMapper.toModel(patientRequestDTO));
-        return PatientMapper.toDTO(patient);
+        PatientResponseDTO patientResponseDTO = PatientMapper.toDTO(patient);
+        billingServiceGrpcClient.createBillingAccount(patientResponseDTO.getId(), patientResponseDTO.getName(), patientResponseDTO.getEmail());
+        return patientResponseDTO;
     }
 
     public PatientResponseDTO updatePatient(UUID patientId, PatientRequestDTO patientRequestDTO) {
