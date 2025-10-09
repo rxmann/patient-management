@@ -14,7 +14,7 @@ COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
 # Copy the full source code into the container
-COPY src/ ./src
+COPY src ./src
 
 # Build the application (compiles and creates the JAR)
 RUN mvn clean package
@@ -23,7 +23,7 @@ RUN mvn clean package
 # Stage 2: Run the Built App
 # --------------------------
 # Use a lightweight OpenJDK 24 image to run the built application
-FROM openjdk:24-jdk AS RUNNER
+FROM openjdk:21-jdk AS runner   
 
 # Set the working directory for the runtime container
 WORKDIR /app

@@ -1,41 +1,21 @@
 networks:
   pms-internal:
     driver: bridge
+volumes:
+  patient_data:
 
 services:
   patient-service-db:
-    image: postgres:latest
+    image: bitnami/postgresql:latest
     container_name: patient-service-db
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      - POSTGRESQL_USERNAME=rxman
+      - POSTGRESQL_PASSWORD=secretpass
+      - POSTGRESQL_DATABASE=db
     ports:
-      - "${DB_PORT}:5432"
+      - "5000:5432"
     volumes:
-      - ${DATA_VOLUME}:/var/lib/postgresql/data
-    networks:
-      - pms-internal
-
-  patient-service:
-    build:
-      context: ./patient-service
-      dockerfile: Dockerfile
-    image: patient-service:latest
-    container_name: patient-service
-    ports:
-      - "${PATIENT_SERVICE_HTTP_PORT}:4000"
-    environment:
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
-      SPRING_SQL_INIT_MODE: ${SPRING_SQL_INIT_MODE}
-      BILLING_SERVICE_ADDRESS: billing-service
-      BILLING_SERVICE_GRPC_PORT: ${BILLING_SERVICE_GRPC_PORT}
-    depends_on:
-      - patient-service-db
-      - billing-service
+      - patient_data:/bitnami/postgresql
     networks:
       - pms-internal
 
@@ -46,10 +26,10 @@ services:
     image: billing-service:latest
     container_name: billing-service
     ports:
-      - "${BILLING_SERVICE_HTTP_PORT}:4001"
-      - "${BILLING_SERVICE_GRPC_PORT}:7001"
+      - "4001:4001"
+      - "7001:7001"
     environment:
-      BILLING_SERVICE_HTTP_PORT: ${BILLING_SERVICE_HTTP_PORT}
-      BILLING_SERVICE_GRPC_PORT: ${BILLING_SERVICE_GRPC_PORT}
+      BILLING_SERVICE_HTTP_PORT: 4001
+      BILLING_SERVICE_GRPC_PORT: 7001
     networks:
       - pms-internal
