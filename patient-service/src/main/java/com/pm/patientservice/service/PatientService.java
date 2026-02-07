@@ -1,5 +1,6 @@
 package com.pm.patientservice.service;
 
+import billing.BillingResponse;
 import com.pm.patientservice.dto.PatientRequestDTO;
 import com.pm.patientservice.dto.PatientResponseDTO;
 import com.pm.patientservice.exception.EmailAlreadyExistsException;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+
 @Service
 public class PatientService {
 
@@ -29,8 +31,10 @@ public class PatientService {
         this.billingServiceGrpcClient = billingServiceGrpcClient;
     }
 
-    public List<PatientResponseDTO> getPatients () {
+    public List<PatientResponseDTO> getPatients() {
         List<Patient> patients = patientRepository.findAll();
+        var ans = billingServiceGrpcClient.addTwoNumbers(9.0, 1.0);
+        log.info("Result of add two num: {}", ans);
         return patients.stream().map(PatientMapper::toDTO).toList();
     }
 
@@ -39,7 +43,8 @@ public class PatientService {
         this.checkForDuplicateEmail(patientRequestDTO.getEmail());
         Patient patient = patientRepository.save(PatientMapper.toModel(patientRequestDTO));
         PatientResponseDTO patientResponseDTO = PatientMapper.toDTO(patient);
-        // billingServiceGrpcClient.createBillingAccount(patientResponseDTO.getId(), patientResponseDTO.getName(), patientResponseDTO.getEmail());
+        BillingResponse billingResponse = billingServiceGrpcClient.createBillingAccount(patientResponseDTO.getId(), patientResponseDTO.getName(), patientResponseDTO.getEmail());
+        log.info("Result of create billing account: {}", billingResponse);
         return patientResponseDTO;
     }
 
@@ -61,13 +66,13 @@ public class PatientService {
 
     }
 
-    private void checkForDuplicateEmail (String email) {
+    private void checkForDuplicateEmail(String email) {
         if (patientRepository.existsByEmail(email)) {
             throw new EmailAlreadyExistsException("Email Already Exists: " + email);
         }
     }
 
-    private void checkForDuplicateEmail (String email, UUID patientId) {
+    private void checkForDuplicateEmail(String email, UUID patientId) {
         if (patientRepository.existsByEmailAndIdNot(email, patientId)) {
             throw new EmailAlreadyExistsException("Email Already Exists: " + email);
         }
