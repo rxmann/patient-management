@@ -16,11 +16,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-
 @Service
 public class PatientService {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger log = LoggerFactory.getLogger(PatientService.class);
     private final PatientRepository patientRepository;
     private final BillingServiceGrpcClient billingServiceGrpcClient;
 
@@ -36,16 +35,16 @@ public class PatientService {
     }
 
     public PatientResponseDTO createPatient(PatientRequestDTO patientRequestDTO) {
-        logger.debug(patientRequestDTO.toString());
+        log.debug(patientRequestDTO.toString());
         this.checkForDuplicateEmail(patientRequestDTO.getEmail());
         Patient patient = patientRepository.save(PatientMapper.toModel(patientRequestDTO));
         PatientResponseDTO patientResponseDTO = PatientMapper.toDTO(patient);
-        billingServiceGrpcClient.createBillingAccount(patientResponseDTO.getId(), patientResponseDTO.getName(), patientResponseDTO.getEmail());
+        // billingServiceGrpcClient.createBillingAccount(patientResponseDTO.getId(), patientResponseDTO.getName(), patientResponseDTO.getEmail());
         return patientResponseDTO;
     }
 
     public PatientResponseDTO updatePatient(UUID patientId, PatientRequestDTO patientRequestDTO) {
-        logger.debug(patientRequestDTO.toString());
+        log.debug(patientRequestDTO.toString());
 
         Patient patient = patientRepository.findById(patientId).orElseThrow(() -> new PatientNotFoundException("Patient with id: " + patientId + " not found"));
 

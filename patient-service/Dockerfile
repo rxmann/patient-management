@@ -2,7 +2,7 @@
 # Stage 1: Build the App
 # -----------------------
 # Use Maven image with Eclipse Temurin JDK 24 on Ubuntu Noble as the builder
-FROM maven:3.9.9-eclipse-temurin-24-noble AS BUILDER
+FROM maven:3.9.9-eclipse-temurin-21-noble AS BUILDER
 
 # Set the working directory inside the container
 WORKDIR /app
