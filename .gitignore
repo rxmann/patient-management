@@ -1,0 +1,37 @@
+# --- IDE & System Files ---
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# --- Java / Build Tools ---
+# Matches 'target' folders in the root and every sub-module
+**/target/
+build/
+out/
+.gradle/
+.settings/
+.classpath
+.project
+
+# --- Environment & Secrets ---
+# Matches .env files at any depth
+**/.env
+**/.env.local
+**/.env.*.local
+*.properties
+!src/main/resources/*.properties
+
+# --- Wrappers ---
+# If you want to keep wrappers at the root only, remove the **
+**/.mvn/
+**/mvnw
+**/mvnw.cmd
+**/.gradle/
+**/gradlew
+**/gradlew.bat
+
+# --- Logs ---
+**/logs/
+*.log
