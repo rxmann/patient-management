@@ -5,6 +5,7 @@ option java_package = 'billing';
 
 service BillingService {
   rpc CreateBillingAccount (BillingRequest) returns (BillingResponse);
+  rpc Add (AddParams) returns (AddResponse);
 }
 
 message BillingRequest {
@@ -16,4 +17,13 @@ message BillingRequest {
 message BillingResponse {
   string accountId = 1;
   string status = 2;
+}
+
+message AddParams {
+  double a = 1;
+  double b = 2;
+}
+
+message AddResponse {
+  double result = 1;
 }

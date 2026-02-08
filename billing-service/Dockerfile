@@ -1,39 +1,27 @@
-# -----------------------
-# Stage 1: Build the App
-# -----------------------
-# Use Maven image with Eclipse Temurin JDK 24 on Ubuntu Noble as the builder
+# Stage 1: Build
 FROM maven:3.9.9-eclipse-temurin-21-noble AS BUILDER
-
-# Set the working directory inside the container
 WORKDIR /app
-
-# Copy only the pom.xml to leverage Docker layer caching for dependencies
 COPY pom.xml .
-
-# Download all Maven dependencies (offline build support)
+# Only download dependencies
 RUN mvn dependency:go-offline -B
+COPY src ./src
+# Skip tests to speed up image creation (assuming CI handles tests)
+RUN mvn clean package -DskipTests
 
-# Copy the full source code into the container
-COPY src/ ./src
-
-# Build the application (compiles and creates the JAR)
-RUN mvn clean package
-
-# --------------------------
-# Stage 2: Run the Built App
-# --------------------------
-# Use a lightweight OpenJDK 24 image to run the built application
-FROM openjdk:21-jdk AS RUNNER
-
-# Set the working directory for the runtime container
+# Stage 2: Run
+# Using 'jre' and 'jammy' (Ubuntu 22.04) for a smaller, stable footprint
+FROM eclipse-temurin:21-jre-jammy AS runner
 WORKDIR /app
 
-# Copy the packaged JAR file from the build stage
-COPY --from=BUILDER ./app/target/billing-service-0.0.1-SNAPSHOT.jar ./app.jar
+# SECURITY: Create a non-privileged user
+RUN useradd -ms /bin/bash rxman
+USER rxman
 
-# Expose ports 4001 and 9001
+# Copy the JAR from the builder
+COPY --from=BUILDER /app/target/billing-service-0.0.1-SNAPSHOT.jar ./app.jar
+
 EXPOSE 4001
 EXPOSE 7001
 
-# Run the JAR file
+# Using exec form for ENTRYPOINT is best practice
 ENTRYPOINT ["java", "-jar", "app.jar"]

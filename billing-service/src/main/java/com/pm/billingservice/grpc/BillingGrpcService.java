@@ -1,5 +1,7 @@
 package com.pm.billingservice.grpc;
 
+import billing.AddParams;
+import billing.AddResponse;
 import billing.BillingRequest;
 import billing.BillingResponse;
 import billing.BillingServiceGrpc.BillingServiceImplBase;
@@ -23,6 +25,15 @@ public class BillingGrpcService extends BillingServiceImplBase {
 //        Sends a response
         responseObserver.onNext(billingResponse);
 //        Closes the RPC session
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void add(AddParams addParams, StreamObserver<AddResponse> responseObserver) {
+        log.info("Add request received {} ", addParams.toString());
+        double result = addParams.getA() + addParams.getB();
+        AddResponse returnRes = AddResponse.newBuilder().setResult(result).build();
+        responseObserver.onNext(returnRes);
         responseObserver.onCompleted();
     }
 
