@@ -1,3 +1,4 @@
+version: "3"
 services:
   patient-service-db:
     image: bitnami/postgresql:latest
@@ -13,6 +14,7 @@ services:
     networks:
       - pms-internal
 
+  #***************************************************************************************************
   patient-service:
     build:
       context: ./patient-service
@@ -23,6 +25,7 @@ services:
     depends_on:
       - patient-service-db
       - billing-service
+      - kafka
     networks:
       - pms-internal
     environment:
@@ -36,7 +39,9 @@ services:
       SPRING_SQL_INIT_MODE: always
       BILLING_SERVICE_ADDRESS: billing-service
       BILLING_SERVICE_GRPC_PORT: 7001
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
+  #***************************************************************************************************
   billing-service:
     build:
       context: ./billing-service
@@ -52,27 +57,58 @@ services:
     networks:
       - pms-internal
 
-  broker:
-    image: apache/kafka:latest
-    container_name: kafka
+  #***************************************************************************************************
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: kafka-broker
+
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+
     environment:
+      # -------------------------
+      # KRaft mode
+      # -------------------------
       KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://localhost:9092,CONTROLLER://localhost:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_PROCESS_ROLES: controller,broker
+
+      # -------------------------
+      # Listeners
+      # -------------------------
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+
+      # -------------------------
+      # Controller quorum
+      # -------------------------
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+
+      # -------------------------
+      # Single node fixes
+      # -------------------------
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_NUM_PARTITIONS: 3
+
+      # -------------------------
+      # Cluster id
+      # -------------------------
+      KAFKA_CLUSTER_ID: kafka-cluster-1
+
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
     networks:
       - pms-internal
+
+#***************************************************************************************************
 networks:
   pms-internal:
     driver: bridge
 volumes:
   patient_data:
+  kafka_data:
 
