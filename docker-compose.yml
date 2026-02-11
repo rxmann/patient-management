@@ -58,6 +58,22 @@ services:
       - pms-internal
 
   #***************************************************************************************************
+  analytics-service:
+    build:
+      context: ./analytics-service
+      dockerfile: Dockerfile
+    image: analytics-service:latest
+    container_name: analytics-service
+    depends_on:
+      - kafka
+    ports:
+      - "4002:4002"
+    networks:
+      - pms-internal
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+  #***************************************************************************************************
   kafka:
     image: apache/kafka:3.7.0
     container_name: kafka-broker
@@ -111,4 +127,3 @@ networks:
 volumes:
   patient_data:
   kafka_data:
-
