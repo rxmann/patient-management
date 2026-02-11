@@ -14,19 +14,15 @@ public class KafkaConsumer {
 
     @KafkaListener(topics = "patient", groupId = "analytics-service")
     public void consumeEvent(byte[] event) throws InvalidProtocolBufferException {
-
+        log.info("HERE");
         try {
             PatientEvent patientEvent = PatientEvent.parseFrom(event);
             // perform analytics
-log.info("Received Patient Event: [PatientId={}, PatientName={}, PatientEmail={}]", patientEvent.getPatientId(), patientEvent.getName(), patientEvent.getEmail());
+            log.info("Received Patient Event: [PatientId={}, PatientName={}, PatientEmail={}]", patientEvent.getPatientId(), patientEvent.getName(), patientEvent.getEmail());
         } catch (InvalidProtocolBufferException e) {
             log.error("Error parsing event: {}.", e.getMessage());
             throw new RuntimeException(e);
         }
-
-
-
-
     }
 
 }
