@@ -1,5 +1,6 @@
 version: "3"
 services:
+  #***************************************************************************************************
   patient-service-db:
     image: bitnami/postgresql:latest
     container_name: patient-service-db
@@ -15,13 +16,28 @@ services:
       - pms-internal
 
   #***************************************************************************************************
+  auth-service-db:
+    image: bitnami/postgresql:latest
+    container_name: auth-service-db
+    environment:
+      - POSTGRESQL_USERNAME=rxman
+      - POSTGRESQL_PASSWORD=secretpass
+      - POSTGRESQL_DATABASE=db
+    ports:
+      - "5001:5432"
+    volumes:
+      - auth_data:/bitnami/postgresql
+    networks:
+      - pms-internal
+
+  #***************************************************************************************************
   patient-service:
     build:
       context: ./patient-service
       dockerfile: Dockerfile
     container_name: patient-service
-    ports:
-      - "4000:4000"
+    # ports:
+    # - "4000:4000"
     depends_on:
       - patient-service-db
       - billing-service
@@ -69,6 +85,24 @@ services:
     networks:
       - pms-internal
 
+  #***************************************************************************************************
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    image: auth-service:latest
+    container_name: auth-service
+    ports:
+      - "4005:4005"
+    networks:
+      - pms-internal
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-service-db:5432/db
+      SPRING_DATASOURCE_USERNAME: rxman
+      SPRING_DATASOURCE_PASSWORD: secretpass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_SQL_INIT_MODE: always
   #***************************************************************************************************
   analytics-service:
     build:
@@ -138,4 +172,6 @@ networks:
     driver: bridge
 volumes:
   patient_data:
+  auth_data:
   kafka_data:
+
