@@ -18,6 +18,14 @@ spring:
           filters:
             - RewritePath=/api-docs/patients,/v3/api-docs
 
+        - id: auth-service-route
+          uri: http://auth-service:4005
+          predicates:
+            - Path=/auth/**
+          filters:
+            - StripPrefix=1
+          # http://localhost:4004/auth/login
+          # API_GATEWAY: http://auth-service:4005/login
 
 
 

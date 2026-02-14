@@ -92,8 +92,8 @@ services:
       dockerfile: Dockerfile
     image: auth-service:latest
     container_name: auth-service
-    ports:
-      - "4005:4005"
+    #    ports:
+    #      - "4005:4005"
     networks:
       - pms-internal
     environment:
@@ -103,6 +103,7 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
       SPRING_SQL_INIT_MODE: always
+      JWT_SECRET: 4a6650614e6a527334753778214125442a472d4b6150645267556b5870327335
   #***************************************************************************************************
   analytics-service:
     build:
