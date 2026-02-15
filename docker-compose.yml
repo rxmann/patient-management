@@ -40,8 +40,8 @@ services:
     # - "4000:4000"
     depends_on:
       - patient-service-db
-      - billing-service
-      - kafka
+    #      - billing-service
+    #      - kafka
     networks:
       - pms-internal
     environment:
@@ -84,6 +84,8 @@ services:
       - "4004:4004"
     networks:
       - pms-internal
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:4005
 
   #***************************************************************************************************
   auth-service:
@@ -94,6 +96,8 @@ services:
     container_name: auth-service
     #    ports:
     #      - "4005:4005"
+    depends_on:
+      - auth-service-db
     networks:
       - pms-internal
     environment:
