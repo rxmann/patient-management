@@ -30,7 +30,7 @@ public class AuthController {
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequestDto) {
         log.info("Login request received: {}", loginRequestDto.toString());
         Optional<String> optToken = authService.authenticate(loginRequestDto);
-        return optToken.map(s -> ResponseEntity.ok(new LoginResponseDTO(s))).orElseGet(() -> ResponseEntity.badRequest().build());
+        return optToken.map(s -> ResponseEntity.ok(new LoginResponseDTO(s))).orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
 
     @Operation(summary = "validate token.")

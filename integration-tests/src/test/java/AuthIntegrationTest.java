@@ -40,17 +40,19 @@ public class AuthIntegrationTest {
     public void shouldReturnUnauthorizedOnInvalidLogin() {
         String loginPayload = """
                   {
-                    "email": "invalid_user@test.com",
+                    "email": "testuser@test.com",
                     "password": "wrongpassword"
                   }
                 """;
 
         given()
+                .log().all()   // log request
                 .contentType("application/json")
                 .body(loginPayload)
                 .when()
                 .post("/auth/login")
                 .then()
+                .log().all()   // log response
                 .statusCode(401);
     }
 }
